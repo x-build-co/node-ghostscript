@@ -42,6 +42,12 @@ gs.prototype.jpegq = function(value) {
   return this;
 };
 
+gs.prototype.dsfactor = function(value) {
+  value = value || 1;
+  this.options.push('-dDownScaleFactor=' + value);
+  return this;
+};
+
 gs.prototype.nopause = function() {
   this.options.push('-dNOPAUSE');
   return this;
