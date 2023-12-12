@@ -4,7 +4,7 @@ Wrapper for ghostscript in node.js.
 
 ## Install
 
-    npm install https://github.com/x-build-co/node-ghostscrip/tarball/master
+    npm install https://github.com/x-build-co/node-ghostscrip-wrapper/tarball/master
 
 ## Usage
 
