@@ -4,7 +4,7 @@ Wrapper for ghostscript in node.js.
 
 ## Install
 
-    npm install https://github.com/musubu/node-ghostscript/tarball/master
+    npm install https://github.com/x-build-co/node-ghostscrip/tarball/master
 
 ## Usage
 
@@ -17,6 +17,8 @@ Wrapper for ghostscript in node.js.
       .device('jpeg')
       .input('./test.pdf')
       .output('./test-%d.jpg')
+      .setExecutablePath('your path to gs')
+      .dsfactor(1)
       .r(144)
       .jpegq(90)
       .exec(function(err, stdout, stderr) {
@@ -38,6 +40,8 @@ Wrapper for ghostscript in node.js.
 * `output`
 * `r`
 * `quiet`
+* `setExecutablePath`
+* `dsfactor`
 
 ## Test
 
