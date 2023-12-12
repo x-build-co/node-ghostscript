@@ -7,6 +7,7 @@ var create = function() {
 var gs = function() {
   this.options = [];
   this._input = null;
+  this._executablePath = 'gs'; // Default to 'gs', can be overridden with setExecutablePath
 };
 
 gs.prototype.batch = function() {
@@ -20,13 +21,19 @@ gs.prototype.device = function(device) {
   return this;
 };
 
+// Method to set the Ghostscript executable path
+gs.prototype.setExecutablePath = function(path) {
+  this._executablePath = path;
+  return this;
+};
+
 gs.prototype.exec = function(callback) {
   var self = this;
 
   if (!this._input) return callback("Please specify input");
 
   var args = this.options.concat([this._input]).join(' ');
-  exec('gs ' + args, function(err, stdout, stderr) {
+  exec(this._executablePath + ' ' + args, function(err, stdout, stderr) {
     callback(err, stdout, stderr);
   });
 };
