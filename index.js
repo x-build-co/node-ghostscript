@@ -1,5 +1,5 @@
 var exec = require('child_process').exec;
-var fs = require('fs/promises');
+var fs = require('fs');
 var path = require('path');
 var { promisify } = require('util');
 var execPromise = promisify(exec);
