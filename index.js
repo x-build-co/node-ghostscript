@@ -1,10 +1,8 @@
 var exec = require('child_process').exec;
-var fs = require('fs');
+var fs = require('fs/promises');
 var path = require('path');
 var { promisify } = require('util');
 var execPromise = promisify(exec);
-var { TRUE } = require('node-sass');
-
 
 var cwd = process.cwd();
 
@@ -15,9 +13,11 @@ var create = function () {
 var gs = function () {
   this.options = [];
   this._input = null;
-  this._executablePath = 'gs'; // Default to 'gs'
+  this._output = null;
+  this._executablePath = 'gs';
   this.tempFolder = path.join(cwd, "temp");
 };
+
 
 gs.prototype.batch = function () {
   this.options.push('-dBATCH');
@@ -36,15 +36,20 @@ gs.prototype.setExecutablePath = function (path) {
   return this;
 };
 
-gs.prototype.exec = function (callback) {
+gs.prototype.exec = async function () {
   var self = this;
 
-  if (!this._input) return callback("Please specify input");
+  if (!this._input) throw new Error("Please specify input");
 
   var args = this.options.concat([this._input]).join(' ');
-  exec(this._executablePath + ' ' + args, function (err, stdout, stderr) {
-    callback(err, stdout, stderr);
-  });
+  await execPromise(this._executablePath + ' ' + args);
+
+  if (this._output) {
+    const compressFileBase64 = await fs.readFile(this._output, "base64");
+    await fs.unlink(this._input);
+    await fs.unlink(this._output);
+    return compressFileBase64;
+  }
 };
 
 gs.prototype.input = function (file) {
@@ -90,28 +95,22 @@ gs.prototype.resolution = function (xres, yres) {
 
 gs.prototype.r = gs.prototype.res = gs.prototype.resolution;
 
-// New method specifically for PDF compression
-gs.prototype.compressPdf = async function (base64Input) {
+gs.prototype.inputBase64 = async function (base64) {
   const hasTempFolder = fs.existsSync(this.tempFolder);
   if (!hasTempFolder) {
     await fs.mkdir(this.tempFolder);
   }
 
-  const inputFilePath = path.join(this.tempFolder, "original.pdf");
-  const outputFilePath = path.join(this.tempFolder, "compressed.pdf");
-  await fs.writeFile(inputFilePath, base64Input, "base64");
-
-  this.batch().nopause().quiet().device('pdfwrite').output(outputFilePath).input(inputFilePath);
-
-  var args = this.options.concat([this._input]).join(' ');
-  await execPromise(this._executablePath + ' ' + args);
-
-  const compressedFileBase64 = await fs.readFile(outputFilePath, "base64");
-  await fs.unlink(inputFilePath);
-  await fs.unlink(outputFilePath);
-
-  return compressedFileBase64;
+  this._input = path.join(this.tempFolder, "original.pdf");
+  await fs.writeFile(this._input, base64, "base64");
+  return this;
 };
 
+// New method to set output as Base64
+gs.prototype.outputBase64 = function () {
+  this._output = path.join(this.tempFolder, "compress.pdf");
+  this.output(this._output);
+  return this;
+};
 
 module.exports = create;
