@@ -96,9 +96,12 @@ gs.prototype.resolution = function (xres, yres) {
 gs.prototype.r = gs.prototype.res = gs.prototype.resolution;
 
 gs.prototype.inputBase64 = async function (base64) {
-  const hasTempFolder = fs.existsSync(this.tempFolder);
-  if (!hasTempFolder) {
+  try {
     await fs.mkdir(this.tempFolder);
+  } catch (error) {
+    if (error.code !== 'EEXIST') {
+      throw error;
+    }
   }
 
   this._input = path.join(this.tempFolder, "original.pdf");
@@ -106,7 +109,6 @@ gs.prototype.inputBase64 = async function (base64) {
   return this;
 };
 
-// New method to set output as Base64
 gs.prototype.outputBase64 = function () {
   this._output = path.join(this.tempFolder, "compress.pdf");
   this.output(this._output);
